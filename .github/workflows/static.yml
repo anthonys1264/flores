@@ -1,43 +1,167 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flores Para Ti — Música</title>
+  <style>
+    :root{ --bg:#070617; --neon:#fff07a; --accent:#ffd54a; }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{
+      background: linear-gradient(135deg, #0a0a1a, #1c1c3a, #0a0a1a);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color:#fff; display:flex; align-items:center; justify-content:center; padding:20px; overflow:hidden
+    }
 
-on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
+    @keyframes gradientBG {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+    .card{
+      width:360px;
+      max-width:95vw;
+      height:auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:22px; box-shadow:0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      padding:18px; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.03)
+    }
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    .title{
+      text-align:center; margin-top:8px; font-weight:800; letter-spacing:1px; line-height:0.95;
+      text-transform:capitalize; font-size:40px; filter:drop-shadow(0 6px 18px rgba(255,230,120,0.25));
+      color:var(--neon);
+      text-shadow:0 0 12px rgba(255,230,140,0.9), 0 0 28px rgba(255,200,40,0.25);
+    }
+    .subtitle{display:block; font-size:30px; margin-top:6px;}
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    .player{
+      margin:16px auto 8px; width:90%; background:rgba(255,255,255,0.03); border-radius:18px; padding:10px 12px; display:flex; align-items:center; gap:10px
+    }
+    .play-btn{ width:44px; height:44px; border-radius:50%; background:linear-gradient(180deg,#ffd24a,#ffb84a); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(255,150,10,0.18)}
+    .play-btn.paused{ background:rgba(255,255,255,0.06); }
+    .play-btn svg{ width:20px; height:20px }
+    .track-info{flex:1}
+    .track-title{ font-weight:700; font-size:14px }
+    .time{ font-size:12px; opacity:0.8 }
 
-jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    .image-container{ display:block; width:280px; margin:12px auto 0; border-radius:18px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
+    .image-container img{ width:100%; display:block; border-radius:18px; }
+
+    /* Video */
+    .video-container{ margin-top:20px; border-radius:18px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
+    .video-container iframe{ width:100%; height:215px; border:0; display:block; }
+
+    /* Flores pequeñas de fondo */
+    .bg-flower{
+      position:absolute;
+      width:24px;
+      height:24px;
+      background: radial-gradient(circle at center, #fff59d 0%, #ffeb3b 50%, #fbc02d 100%);
+      border-radius:50%;
+      animation: floaty 10s infinite ease-in-out;
+      opacity:0.7;
+      filter: drop-shadow(0 0 4px rgba(255,220,100,0.8));
+    }
+    @keyframes floaty{
+      0%{ transform:translateY(0) rotate(0deg); }
+      50%{ transform:translateY(-60px) rotate(180deg); }
+      100%{ transform:translateY(0) rotate(360deg); }
+    }
+
+    @media (max-width:420px){ .card{height:auto} .title{font-size:36px} }
+  </style>
+</head>
+<body>
+  <div class="card" role="application">
+    <div class="title">Flores<br><span class="subtitle">Para Ti 🌻</span></div>
+
+    <div class="player" id="player">
+      <div class="play-btn" id="playBtn" title="Play/Pause">
+        <svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z" fill="#000"/></svg>
+      </div>
+      <div class="track-info">
+        <div class="track-title">Feliz 21 de septiembre ❤️</div>
+        <div class="time"><span id="current">0:00</span> — <span id="duration">1:00</span></div>
+      </div>
+      <audio id="audio" preload="metadata">
+        <source src="music.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento audio.
+      </audio>
+    </div>
+
+    <!-- Imagen -->
+    <div class="image-container">
+      <img src="flores.gif" alt="Flores amarillas">
+    </div>
+
+    <!-- Video de YouTube -->
+    <div class="video-container">
+      <iframe id="ytplayer" 
+      src="https://www.youtube.com/embed/FR9qUQ9jpvM?enablejsapi=1&start=50" 
+      title="YouTube video player" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      allowfullscreen>
+    </iframe>
+    
+    </div>
+
+    <!-- Flores pequeñas -->
+    <div class="bg-flower" style="left:20px; top:40px; animation-duration:7s;"></div>
+    <div class="bg-flower" style="left:260px; top:100px; animation-duration:9s;"></div>
+    <div class="bg-flower" style="left:80px; top:300px; animation-duration:6s;"></div>
+    <div class="bg-flower" style="left:200px; top:400px; animation-duration:8s;"></div>
+    <div class="bg-flower" style="left:150px; top:500px; animation-duration:10s;"></div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const currentEl = document.getElementById('current');
+    const durationEl = document.getElementById('duration');
+    let ytPlayer;
+
+    // Inicializar el reproductor de YouTube
+    function onYouTubeIframeAPIReady() {
+      ytPlayer = new YT.Player('ytplayer');
+    }
+
+    // Control del botón amarillo
+    playBtn.addEventListener('click', async () => {
+      if (audio.paused) {
+        try{ await audio.play(); }catch(e){}
+        if(ytPlayer) ytPlayer.playVideo();
+        playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="#000"/>';
+        playBtn.classList.remove('paused');
+      } else {
+        audio.pause();
+        if(ytPlayer) ytPlayer.pauseVideo();
+        playIcon.innerHTML = '<path d="M8 5v14l11-7z" fill="#000"/>';
+        playBtn.classList.add('paused');
+      }
+    });
+
+    // Actualizar tiempo de audio
+    audio.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = formatTime(audio.duration);
+    });
+    audio.addEventListener('timeupdate', () => {
+      currentEl.textContent = formatTime(audio.currentTime);
+    });
+
+    function formatTime(sec){
+      if (!isFinite(sec)) return '0:00';
+      const s = Math.floor(sec % 60).toString().padStart(2,'0');
+      const m = Math.floor(sec/60);
+      return `${m}:${s}`;
+    }
+
+    playBtn.setAttribute('tabindex','0');
+    playBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') playBtn.click(); });
+  </script>
+</body>
+</html>
